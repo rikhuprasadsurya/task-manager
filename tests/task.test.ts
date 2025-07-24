@@ -1,5 +1,5 @@
 import request from 'supertest';
-import app from '../index';
+import app from '../src';
 
 describe('Task API', () => {
     it('should return empty list of tasks', async () => {

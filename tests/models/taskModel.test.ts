@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { Task } from '../models/task.model';
+import { Task } from '../../src/models/task.model';
 
 describe('Task Model', () => {
     beforeAll(async () => {
