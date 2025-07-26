@@ -1,13 +1,10 @@
 import express from 'express';
+import taskRoutes from "./routes/task.routes";
 
 const app = express();
 app.use(express.json());
 
-let tasks: any[] = [];
-
-app.get('/tasks', (_req, res) => {
-    res.status(200).json(tasks);
-});
+app.use('/api/tasks', taskRoutes);
 
 export default app;
 
