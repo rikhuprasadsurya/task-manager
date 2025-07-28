@@ -1,6 +1,7 @@
 import request from 'supertest';
 import app from '../src';
 import mongoose from "mongoose";
+import redis from '../src/utils/redis';
 
 beforeAll(async () => {
     await mongoose.connect('mongodb://localhost:27017/taskdb-test');
@@ -9,6 +10,7 @@ beforeAll(async () => {
 afterAll(async () => {
     await mongoose.connection.dropDatabase();
     await mongoose.connection.close();
+    await redis.quit();
 });
 
 describe('Task API', () => {
@@ -16,6 +18,19 @@ describe('Task API', () => {
         const res = await request(app).get('/api/tasks');
         expect(res.statusCode).toBe(200);
         expect(res.body).toEqual([]);
+    });
+
+    it('should return list of available tasks', async () => {
+        const savedTask = await request(app)
+            .post('/api/tasks')
+            .send({ title: 'Test Task',
+                description: 'This is a test task',
+                status: 'in-progress'});
+
+        const res = await request(app).get('/api/tasks');
+        expect(res.statusCode).toBe(200);
+        expect(res.body).toHaveLength(1);
+        expect(res.body[0].title).toEqual('Test Task');
     });
 
     it('should create a new task', async () => {

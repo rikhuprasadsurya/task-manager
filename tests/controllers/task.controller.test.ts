@@ -1,6 +1,11 @@
 import { createTaskHandler } from '../../src/controllers/task.controller';
 import * as taskService from '../../src/services/task.service';
 import { Request, Response } from 'express';
+import redis from '../../src/utils/redis';
+
+afterAll(async () => {
+    await redis.quit();
+});
 
 describe('Task Controller', () => {
     const mockRequest = {
