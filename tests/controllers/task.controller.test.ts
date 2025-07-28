@@ -17,18 +17,18 @@ describe('Task Controller', () => {
     } as any as Response;
 
     it('should call service and respond with 201', async () => {
-        const fakeTask = {
+        const mockServiceReturnValue = {
             _id: 'xyz123',
             ...mockRequest.body,
             createdAt: new Date(),
             updatedAt: new Date(),
         };
 
-        jest.spyOn(taskService, 'createTask').mockResolvedValue(fakeTask);
+        jest.spyOn(taskService, 'createTask').mockResolvedValue(mockServiceReturnValue);
 
         await createTaskHandler(mockRequest, mockResponse);
 
         expect(mockResponse.status).toHaveBeenCalledWith(201);
-        expect(mockResponse.json).toHaveBeenCalledWith(fakeTask);
+        expect(mockResponse.json).toHaveBeenCalledWith(mockServiceReturnValue);
     });
 });
