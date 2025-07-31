@@ -1,6 +1,7 @@
 import redis from '../utils/redis';
 import {ITask, Task} from '../models/task.model';
 import mongoose from "mongoose";
+import {BadRequestError, NotFoundError} from "../utils/errors";
 
 export type CreateTaskInput = Pick<ITask, 'title' | 'description' | 'status'>;
 export const TASKS_CACHE_KEY = 'tasks:all';
@@ -17,13 +18,13 @@ export async function getTasks() {
 
 export async function getTaskById(id: string) {
     if (!mongoose.Types.ObjectId.isValid(id)) {
-        throw new Error('Invalid task ID');
+        throw new BadRequestError('Invalid task ID');
     }
 
     const task = await Task.findById(id).lean();
 
     if(!task){
-        throw new Error('Task not found');
+        throw new NotFoundError('Task not found');
     }
 
     return task;
