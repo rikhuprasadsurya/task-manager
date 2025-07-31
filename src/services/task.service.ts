@@ -15,7 +15,11 @@ export async function getTasks() {
 }
 
 export async function getTask(id: string) {
-    return await Task.findById(id).lean();
+    const task = await Task.findById(id).lean();
+
+    if(!task){
+        throw new Error('Task not found');
+    }
 }
 
 export const createTask = async (data: Partial<CreateTaskInput>): Promise<ITask> => {

@@ -65,6 +65,16 @@ describe('Task Service', () => {
             expect(Task.findById).toHaveBeenCalled();
             expect(task).toEqual(dbTask);
         });
+
+        it('should throw an Error (Task Not Found) when task does not exist', async () =>{
+            const taskIdToFetch = '1';
+            (Task.findById as jest.Mock).mockReturnValue({
+                lean: jest.fn().mockResolvedValue(undefined),
+            });
+
+            await expect(getTask(taskIdToFetch)).rejects.toThrow('Task not found');
+            expect(Task.findById).toHaveBeenCalledWith(taskIdToFetch);
+        });
     });
 
     describe('POST /api/tasks', () => {
