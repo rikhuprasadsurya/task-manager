@@ -1,6 +1,7 @@
-import {TASKS_CACHE_KEY, createTask, CreateTaskInput, getTasks, getTask} from '../../src/services/task.service';
+import {TASKS_CACHE_KEY, createTask, CreateTaskInput, getTasks, getTaskById} from '../../src/services/task.service';
 import { Task } from '../../src/models/task.model';
 import redis from '../../src/utils/redis';
+import mongoose from "mongoose";
 
 
 jest.mock('../../src/models/task.model');
@@ -54,25 +55,32 @@ describe('Task Service', () => {
         });
 
         it('should fetch a task when task id is given', async () =>{
-            const taskIdToFetch = '1';
-            const dbTask = { _id: '1', title: 'DB Task 1' };
+            const taskIdToFetch = new mongoose.Types.ObjectId().toHexString();
+            const dbTask = { _id: taskIdToFetch, title: 'DB Task 1' };
             (Task.findById as jest.Mock).mockReturnValue({
                 lean: jest.fn().mockResolvedValue(dbTask),
             });
 
-            const task = await getTask(taskIdToFetch);
+            const task = await getTaskById(taskIdToFetch);
 
             expect(Task.findById).toHaveBeenCalled();
             expect(task).toEqual(dbTask);
         });
 
+        it('should throw an Error (Invalid task id) when task does not exist', async () =>{
+            const invalidId = '123';
+
+            await expect(getTaskById(invalidId)).rejects.toThrow('Invalid task ID');
+            expect(Task.findById).not.toHaveBeenCalled();
+        });
+
         it('should throw an Error (Task Not Found) when task does not exist', async () =>{
-            const taskIdToFetch = '1';
+            const taskIdToFetch = new mongoose.Types.ObjectId().toHexString();
             (Task.findById as jest.Mock).mockReturnValue({
                 lean: jest.fn().mockResolvedValue(undefined),
             });
 
-            await expect(getTask(taskIdToFetch)).rejects.toThrow('Task not found');
+            await expect(getTaskById(taskIdToFetch)).rejects.toThrow('Task not found');
             expect(Task.findById).toHaveBeenCalledWith(taskIdToFetch);
         });
     });
