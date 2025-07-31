@@ -14,6 +14,10 @@ export async function getTasks() {
     return tasks;
 }
 
+export async function getTask(id: string) {
+    return await Task.findById(id).lean();
+}
+
 export const createTask = async (data: Partial<CreateTaskInput>): Promise<ITask> => {
     const task = new Task(data);
     const savedTask = await task.save();

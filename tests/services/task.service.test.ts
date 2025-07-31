@@ -1,4 +1,4 @@
-import {TASKS_CACHE_KEY, createTask, CreateTaskInput, getTasks} from '../../src/services/task.service';
+import {TASKS_CACHE_KEY, createTask, CreateTaskInput, getTasks, getTask} from '../../src/services/task.service';
 import { Task } from '../../src/models/task.model';
 import redis from '../../src/utils/redis';
 
@@ -53,6 +53,18 @@ describe('Task Service', () => {
             expect(tasks).toEqual(dbTasks);
         });
 
+        it('should fetch a task when task id is given', async () =>{
+            const taskIdToFetch = '1';
+            const dbTask = { _id: '1', title: 'DB Task 1' };
+            (Task.findById as jest.Mock).mockReturnValue({
+                lean: jest.fn().mockResolvedValue(dbTask),
+            });
+
+            const task = await getTask(taskIdToFetch);
+
+            expect(Task.findById).toHaveBeenCalled();
+            expect(task).toEqual(dbTask);
+        });
     });
 
     describe('POST /api/tasks', () => {
