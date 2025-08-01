@@ -2,6 +2,7 @@ import { createTaskHandler } from '../../src/controllers/task.controller';
 import * as taskService from '../../src/services/task.service';
 import { Request, Response } from 'express';
 import redis from '../../src/utils/redis';
+import {BadRequestError} from "../../src/utils/errors";
 
 afterAll(async () => {
     await redis.quit();
@@ -21,19 +22,34 @@ describe('Task Controller', () => {
         json: jest.fn(),
     } as any as Response;
 
-    it('should call service and respond with 201', async () => {
-        const mockServiceReturnValue = {
-            _id: 'xyz123',
-            ...mockRequest.body,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-        };
+    describe('POST /api/tasks', () => {
+        it('should call service and respond with 201', async () => {
+            const mockServiceReturnValue = {
+                _id: 'xyz123',
+                ...mockRequest.body,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            };
 
-        jest.spyOn(taskService, 'createTask').mockResolvedValue(mockServiceReturnValue);
+            jest.spyOn(taskService, 'createTask').mockResolvedValue(mockServiceReturnValue);
 
-        await createTaskHandler(mockRequest, mockResponse);
+            await createTaskHandler(mockRequest, mockResponse);
 
-        expect(mockResponse.status).toHaveBeenCalledWith(201);
-        expect(mockResponse.json).toHaveBeenCalledWith(mockServiceReturnValue);
+            expect(mockResponse.status).toHaveBeenCalledWith(201);
+            expect(mockResponse.json).toHaveBeenCalledWith(mockServiceReturnValue);
+        });
+
+        it('should return Bad Request 400 error When task creation fails', async () => {
+            const error = new Error('invalid data');
+
+            jest.spyOn(taskService, 'createTask').mockRejectedValue(error);
+
+            await createTaskHandler(mockRequest, mockResponse);
+
+            expect(mockResponse.status).toHaveBeenCalledWith(400);
+            expect(mockResponse.json).toHaveBeenCalledWith(
+                {error: 'invalid data'}
+            );
+        });
     });
 });

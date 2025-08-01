@@ -31,10 +31,14 @@ export async function getTaskById(id: string) {
 }
 
 export const createTask = async (data: Partial<CreateTaskInput>): Promise<ITask> => {
-    const task = new Task(data);
-    const savedTask = await task.save();
+    try{
+        const task = new Task(data);
+        const savedTask = await task.save();
 
-    await redis.del(TASKS_CACHE_KEY);
+        await redis.del(TASKS_CACHE_KEY);
 
-    return savedTask;
+        return savedTask;
+    } catch (err:any) {
+        throw err;
+    }
 };

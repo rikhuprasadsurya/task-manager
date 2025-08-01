@@ -28,7 +28,7 @@ describe('Task Service', () => {
 
     describe('GET /api/tasks', () => {
         it('should return tasks from cache if present', async () => {
-            const cachedData = JSON.stringify([{ _id: '1', title: 'Cached Task' }]);
+            const cachedData = JSON.stringify([{_id: '1', title: 'Cached Task'}]);
             (redis.get as jest.Mock).mockResolvedValue(cachedData);
 
             const tasks = await getTasks();
@@ -39,7 +39,7 @@ describe('Task Service', () => {
         });
 
         it('should fetch from DB and cache it if cache is empty', async () => {
-            const dbTasks = [{ _id: '2', title: 'DB Task' }];
+            const dbTasks = [{_id: '2', title: 'DB Task'}];
             (redis.get as jest.Mock).mockResolvedValue(null);
             (Task.find as jest.Mock).mockReturnValue({
                 lean: jest.fn().mockResolvedValue(dbTasks),
@@ -53,7 +53,9 @@ describe('Task Service', () => {
             expect(redis.set).toHaveBeenCalledWith('tasks:all', JSON.stringify(dbTasks));
             expect(tasks).toEqual(dbTasks);
         });
+    });
 
+    describe('GET /api/tasks/:id', () => {
         it('should fetch a task when task id is given', async () =>{
             const taskIdToFetch = new mongoose.Types.ObjectId().toHexString();
             const dbTask = { _id: taskIdToFetch, title: 'DB Task 1' };
@@ -102,6 +104,17 @@ describe('Task Service', () => {
             expect(mockSave).toHaveBeenCalled();
             expect(redisDelSpy).toHaveBeenCalledWith(TASKS_CACHE_KEY)
             expect(result.title).toBe('Mock Task');
+        });
+
+        it('should throw error when save fails', async () => {
+            const mockSave = jest.fn().mockRejectedValue(new Error('invalid data'));
+
+            (Task as any).mockImplementation(() => ({ save: mockSave }));
+            const redisDelSpy = jest.spyOn(redis, 'del');
+
+            await expect(createTask(mockTaskData)).rejects.toThrow('invalid data');
+            expect(mockSave).toHaveBeenCalled();
+            expect(redisDelSpy).not.toHaveBeenCalled();
         });
     });
 });
