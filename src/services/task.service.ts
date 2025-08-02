@@ -38,3 +38,22 @@ export async function getTaskById(id: string) {
 
     return task;
 }
+
+
+export const updateTask = async (id:string, data: Partial<CreateTaskInput>): Promise<ITask> => {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        throw new BadRequestError('Invalid task ID');
+    }
+
+    const updatedTask = await Task.findByIdAndUpdate(id, data, {
+        new: true,
+        runValidators: true,
+    }).lean();
+
+    if(updatedTask){
+        await redis.del(TASKS_CACHE_KEY);
+        return updatedTask;
+    } else {
+        throw new NotFoundError();
+    }
+}
