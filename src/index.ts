@@ -4,7 +4,7 @@ import taskRouter from "./routes/task.routes";
 const app = express();
 app.use(express.json());
 
-app.use('/api/tasks', taskRouter);
+app.use('/', taskRouter);
 
 //heath endpoint
 app.get('/health', (_req: Request, _res: Response) => {_res.send('API is running...')});
