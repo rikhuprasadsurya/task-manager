@@ -3,7 +3,6 @@ import { Task } from '../../src/models/task.model';
 import redis from '../../src/utils/redis';
 import mongoose from "mongoose";
 
-
 jest.mock('../../src/models/task.model');
 jest.mock('ioredis', () => {
     const mRedis = {

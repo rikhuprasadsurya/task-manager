@@ -1,4 +1,4 @@
-import {createTaskHandler, getTaskHandler} from '../../src/controllers/task.controller';
+import {createTaskHandler, getTaskByIdHandler, getTaskHandler} from '../../src/controllers/task.controller';
 import * as taskService from '../../src/services/task.service';
 import { Request, Response } from 'express';
 import redis from '../../src/utils/redis';
@@ -88,6 +88,45 @@ describe('Task Controller', () => {
             jest.spyOn(taskService, 'getTasks').mockRejectedValue(error);
 
             await getTaskHandler(mockRequest, mockResponse);
+
+            expect(mockResponse.status).toHaveBeenCalledWith(400);
+            expect(mockResponse.json).toHaveBeenCalledWith({error: error.message});
+        });
+    });
+
+    describe('GET /api/tasks/:id', () => {
+        const mockId = 'xyz1';
+        const mockRequest = {
+            params: {
+                id: mockId,
+            },
+        } as any as Request;
+
+        it('should get a task by id', async () => {
+            const mockServiceReturnValue = {
+                _id: mockId,
+                title: 'Controller Test 1',
+                description: 'Test Desc 1',
+                status: 'pending',
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            } as any;
+
+            const getTaskByIdSpy = jest.spyOn(taskService, 'getTaskById').mockResolvedValue(mockServiceReturnValue);
+
+            await getTaskByIdHandler(mockRequest, mockResponse);
+
+            expect(getTaskByIdSpy).toHaveBeenCalledWith(mockId);
+            expect(mockResponse.status).toHaveBeenCalledWith(200);
+            expect(mockResponse.json).toHaveBeenCalledWith(mockServiceReturnValue);
+        });
+
+        it('should return Bad Request 400 error when fetching a task fails', async () => {
+            const error = new Error('some error');
+
+            jest.spyOn(taskService, 'getTaskById').mockRejectedValue(error);
+
+            await getTaskByIdHandler(mockRequest, mockResponse);
 
             expect(mockResponse.status).toHaveBeenCalledWith(400);
             expect(mockResponse.json).toHaveBeenCalledWith({error: error.message});

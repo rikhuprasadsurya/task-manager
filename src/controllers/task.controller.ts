@@ -12,7 +12,7 @@ export const getTaskHandler = async (req: Request, res: Response) => {
 
 export const getTaskByIdHandler = async (req: Request, res: Response) => {
     try {
-        const task = await getTaskById(req.body.id);
+        const task = await getTaskById(req.params.id);
         res.status(200).json(task);
     } catch (err: any) {
         res.status(400).json({ error: err.message });
