@@ -33,6 +33,19 @@ describe('Task API', () => {
         expect(res.body[0].title).toEqual('Test Task');
     });
 
+    it('should return a task for a given id', async () => {
+        const savedTask = await request(app)
+            .post('/api/tasks')
+            .send({ title: 'Test Task',
+                description: 'This is a test task',
+                status: 'in-progress'});
+
+
+        const res = await request(app).get(`/api/tasks/${savedTask.body._id}`);
+        expect(res.statusCode).toBe(200);
+        expect(res.body.title).toEqual('Test Task');
+    });
+
     it('should create a new task', async () => {
         const res = await request(app)
             .post('/api/tasks')
