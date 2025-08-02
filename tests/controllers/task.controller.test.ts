@@ -2,12 +2,14 @@ import {createTaskHandler, getTaskByIdHandler, getTaskHandler} from '../../src/c
 import * as taskService from '../../src/services/task.service';
 import { Request, Response } from 'express';
 import redis from '../../src/utils/redis';
+import mongoose from "mongoose";
 
 afterAll(async () => {
     await redis.quit();
 });
 
 describe('Task Controller', () => {
+    const mockTaskId = new mongoose.Types.ObjectId().toHexString();
     const mockResponse = {
         status: jest.fn().mockReturnThis(),
         json: jest.fn(),
@@ -24,7 +26,7 @@ describe('Task Controller', () => {
 
         it('should create a task when a valid task is given', async () => {
             const mockServiceReturnValue = {
-                _id: 'xyz123',
+                _id: mockTaskId,
                 ...mockRequestWithTask.body,
                 createdAt: new Date(),
                 updatedAt: new Date(),
@@ -59,14 +61,14 @@ describe('Task Controller', () => {
 
         it('should get all tasks', async () => {
             const mockServiceReturnValue = [{
-                _id: 'xyz1',
+                _id: new mongoose.Types.ObjectId().toHexString(),
                 title: 'Controller Test 1',
                 description: 'Test Desc 1',
                 status: 'pending',
                 createdAt: new Date(),
                 updatedAt: new Date(),
             }, {
-                _id: 'xyz2',
+                _id: new mongoose.Types.ObjectId().toHexString(),
                 title: 'Controller Test 2',
                 description: 'Test Desc 2',
                 status: 'in-progress',
@@ -95,16 +97,15 @@ describe('Task Controller', () => {
     });
 
     describe('GET /api/tasks/:id', () => {
-        const mockId = 'xyz1';
         const mockRequest = {
             params: {
-                id: mockId,
+                id: mockTaskId,
             },
         } as any as Request;
 
         it('should get a task by id', async () => {
             const mockServiceReturnValue = {
-                _id: mockId,
+                _id: mockTaskId,
                 title: 'Controller Test 1',
                 description: 'Test Desc 1',
                 status: 'pending',
@@ -116,7 +117,7 @@ describe('Task Controller', () => {
 
             await getTaskByIdHandler(mockRequest, mockResponse);
 
-            expect(getTaskByIdSpy).toHaveBeenCalledWith(mockId);
+            expect(getTaskByIdSpy).toHaveBeenCalledWith(mockTaskId);
             expect(mockResponse.status).toHaveBeenCalledWith(200);
             expect(mockResponse.json).toHaveBeenCalledWith(mockServiceReturnValue);
         });

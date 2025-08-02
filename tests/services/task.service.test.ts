@@ -24,6 +24,7 @@ jest.mock('ioredis', () => {
 
 describe('Task Service', () => {
 
+    const mockTaskId = new mongoose.Types.ObjectId().toHexString();
 
     afterEach(() => {
         jest.clearAllMocks();
@@ -31,7 +32,7 @@ describe('Task Service', () => {
 
     describe('GET /api/tasks', () => {
         it('should return tasks from cache if present', async () => {
-            const cachedData = JSON.stringify([{_id: '1', title: 'Cached Task'}]);
+            const cachedData = JSON.stringify([{_id: mockTaskId, title: 'Cached Task'}]);
             (redis.get as jest.Mock).mockResolvedValue(cachedData);
 
             const tasks = await getTasks();
@@ -42,7 +43,7 @@ describe('Task Service', () => {
         });
 
         it('should fetch from DB and cache it if cache is empty', async () => {
-            const dbTasks = [{_id: '2', title: 'DB Task'}];
+            const dbTasks = [{_id: mockTaskId, title: 'DB Task'}];
             (redis.get as jest.Mock).mockResolvedValue(null);
             (Task.find as jest.Mock).mockReturnValue({
                 lean: jest.fn().mockResolvedValue(dbTasks),
@@ -60,13 +61,12 @@ describe('Task Service', () => {
 
     describe('GET /api/tasks/:id', () => {
         it('should fetch a task when task id is given', async () =>{
-            const taskIdToFetch = new mongoose.Types.ObjectId().toHexString();
-            const dbTask = { _id: taskIdToFetch, title: 'DB Task 1' };
+            const dbTask = { _id: mockTaskId, title: 'DB Task 1' };
             (Task.findById as jest.Mock).mockReturnValue({
                 lean: jest.fn().mockResolvedValue(dbTask),
             });
 
-            const task = await getTaskById(taskIdToFetch);
+            const task = await getTaskById(mockTaskId);
 
             expect(Task.findById).toHaveBeenCalled();
             expect(task).toEqual(dbTask);
@@ -97,7 +97,7 @@ describe('Task Service', () => {
             status: "pending",
         };
         const mockSave = jest.fn().mockResolvedValue({
-            _id: '123abc',
+            _id: mockTaskId,
             ...mockTaskData,
             createdAt: new Date(),
             updatedAt: new Date(),
@@ -143,7 +143,6 @@ describe('Task Service', () => {
         };
 
         it('should update a task for a given id', async () => {
-            const mockTaskId = new mongoose.Types.ObjectId().toHexString();
             jest.spyOn(Task, 'findByIdAndUpdate').mockReturnValue({
                 lean: jest.fn().mockResolvedValue({
                     _id: mockTaskId,
@@ -160,7 +159,6 @@ describe('Task Service', () => {
         });
 
         it('should delete all tasks cache when a task is updated', async () => {
-            const mockTaskId = new mongoose.Types.ObjectId().toHexString();
             jest.spyOn(Task, 'findByIdAndUpdate').mockReturnValue({
                 lean: jest.fn().mockResolvedValue({
                     _id: mockTaskId,
