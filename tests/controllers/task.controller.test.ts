@@ -23,7 +23,7 @@ describe('Task Controller', () => {
     } as any as Response;
 
     describe('POST /api/tasks', () => {
-        it('should call service and respond with 201', async () => {
+        it('should create a task when a valid task is given', async () => {
             const mockServiceReturnValue = {
                 _id: 'xyz123',
                 ...mockRequest.body,
