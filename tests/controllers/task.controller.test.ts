@@ -1,8 +1,14 @@
-import {createTaskHandler, getTaskByIdHandler, getTaskHandler} from '../../src/controllers/task.controller';
+import {
+    createTaskHandler,
+    getTaskByIdHandler,
+    getTasksHandler,
+    updateTaskHandler
+} from '../../src/controllers/task.controller';
 import * as taskService from '../../src/services/task.service';
 import { Request, Response } from 'express';
 import redis from '../../src/utils/redis';
 import mongoose from "mongoose";
+import {updateTask} from "../../src/services/task.service";
 
 afterAll(async () => {
     await redis.quit();
@@ -78,7 +84,7 @@ describe('Task Controller', () => {
 
             jest.spyOn(taskService, 'getTasks').mockResolvedValue(mockServiceReturnValue);
 
-            await getTaskHandler(mockRequest, mockResponse);
+            await getTasksHandler(mockRequest, mockResponse);
 
             expect(mockResponse.status).toHaveBeenCalledWith(200);
             expect(mockResponse.json).toHaveBeenCalledWith(mockServiceReturnValue);
@@ -89,7 +95,7 @@ describe('Task Controller', () => {
 
             jest.spyOn(taskService, 'getTasks').mockRejectedValue(error);
 
-            await getTaskHandler(mockRequest, mockResponse);
+            await getTasksHandler(mockRequest, mockResponse);
 
             expect(mockResponse.status).toHaveBeenCalledWith(400);
             expect(mockResponse.json).toHaveBeenCalledWith({error: error.message});
@@ -131,6 +137,48 @@ describe('Task Controller', () => {
 
             expect(mockResponse.status).toHaveBeenCalledWith(400);
             expect(mockResponse.json).toHaveBeenCalledWith({error: error.message});
+        });
+    });
+
+    describe('PUT /api/tasks/:id', () => {
+        const mockRequestWithTask = {
+            params:{
+                id: mockTaskId
+            },
+            body: {
+                title: 'Update Controller Test',
+                description: 'Update Test Desc',
+                status: 'done',
+            },
+        } as any as Request;
+
+        it('should update a task when a valid task is given', async () => {
+            const mockServiceReturnValue = {
+                _id: mockTaskId,
+                ...mockRequestWithTask.body,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            };
+
+            jest.spyOn(taskService, 'updateTask').mockResolvedValue(mockServiceReturnValue);
+
+            await updateTaskHandler(mockRequestWithTask, mockResponse);
+
+            expect(mockResponse.status).toHaveBeenCalledWith(200);
+            expect(mockResponse.json).toHaveBeenCalledWith(mockServiceReturnValue);
+        });
+
+        it('should return Bad Request 400 error When task update fails', async () => {
+            const error = new Error('invalid data');
+
+            jest.spyOn(taskService, 'createTask').mockRejectedValue(error);
+
+            await createTaskHandler(mockRequestWithTask, mockResponse);
+
+            expect(mockResponse.status).toHaveBeenCalledWith(400);
+            expect(mockResponse.json).toHaveBeenCalledWith(
+                {error: 'invalid data'}
+            );
         });
     });
 });

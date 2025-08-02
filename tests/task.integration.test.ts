@@ -40,7 +40,6 @@ describe('Task API', () => {
                 description: 'This is a test task',
                 status: 'in-progress'});
 
-
         const res = await request(app).get(`/api/tasks/${savedTask.body._id}`);
         expect(res.statusCode).toBe(200);
         expect(res.body.title).toEqual('Test Task');
@@ -58,5 +57,24 @@ describe('Task API', () => {
         expect(res.body.title).toBe('Test Task');
         expect(res.body.description).toBe('This is a test task');
         expect(res.body.status).toBe('in-progress');
+    });
+
+    it('should update a existing task', async () => {
+        const savedTask = await request(app)
+            .post('/api/tasks')
+            .send({ title: 'Test Task',
+                description: 'original description',
+                status: 'in-progress'});
+
+        const res = await request(app)
+            .put(`/api/tasks/${savedTask.body._id}`)
+            .send({ title: 'Updated Test Task',
+                status: 'done'});
+
+        expect(res.statusCode).toBe(200);
+        expect(res.body).toHaveProperty('_id');
+        expect(res.body.title).toBe('Updated Test Task');
+        expect(res.body.description).toBe('original description');
+        expect(res.body.status).toBe('done');
     });
 });
