@@ -1,5 +1,10 @@
 import express, {Request, Response} from 'express';
 import taskRouter from "./routes/task.routes";
+import {connectDB} from "./utils/db";
+
+connectDB().catch((err) => {
+    console.error('Failed to start DB:', err);
+});
 
 const app = express();
 app.use(express.json());
@@ -14,4 +19,3 @@ export default app;
 if (require.main === module) {
     app.listen(3000, () => console.log('Server running on port 3000'));
 }
-
