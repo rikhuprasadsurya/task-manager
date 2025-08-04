@@ -1,9 +1,10 @@
 import mongoose from 'mongoose';
-import dotenv from 'dotenv';
 import { Task } from '../src/models/task.model';
 
 const generateFakeTasks = async () => {
-    dotenv.config();
+    if (process.env.NODE_ENV !== 'production') {
+        require('dotenv').config();
+    }
 
     await mongoose.connect(process.env.MONGO_URI!);
 
