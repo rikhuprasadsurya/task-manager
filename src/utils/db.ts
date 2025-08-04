@@ -2,10 +2,6 @@ import mongoose from 'mongoose';
 
 export const connectDB = async () => {
     try {
-        if (process.env.NODE_ENV !== 'production') {
-            require('dotenv').config();
-        }
-
         if(process.env.MONGO_URI){
             const conn = await mongoose.connect(process.env.MONGO_URI, {
                 serverSelectionTimeoutMS: 30000

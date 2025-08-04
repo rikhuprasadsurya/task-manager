@@ -2,6 +2,10 @@ import express, {Request, Response} from 'express';
 import taskRouter from "./routes/task.routes";
 import {connectDB} from "./utils/db";
 
+if (process.env.NODE_ENV !== 'production') {
+    require('dotenv').config();
+}
+
 connectDB().catch((err) => {
     console.error('Failed to start DB:', err);
 });
