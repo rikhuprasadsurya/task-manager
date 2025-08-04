@@ -2,9 +2,9 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import { Task } from '../src/models/task.model';
 
-dotenv.config();
-
 const generateFakeTasks = async () => {
+    dotenv.config();
+
     await mongoose.connect(process.env.MONGO_URI!);
 
     const tasks = Array.from({ length: 10000 }).map((_, i) => ({

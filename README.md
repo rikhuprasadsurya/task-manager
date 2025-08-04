@@ -11,3 +11,4 @@ ESLint + Prettier
 
 
 A script to generate mock tasks for testing purposes is listed in scripts folder.
+npm run generate-tasks
