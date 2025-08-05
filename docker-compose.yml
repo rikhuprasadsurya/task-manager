@@ -16,6 +16,8 @@ services:
       - "8081:8081"
     environment:
       ME_CONFIG_MONGODB_SERVER: mongodb
+    depends_on:
+      - mongodb
   redis:
     image: redis:7
     container_name: redis
