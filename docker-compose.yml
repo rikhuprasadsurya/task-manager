@@ -1,6 +1,18 @@
 version: '3.8'
 
 services:
+  task_manager_app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: task-manager-app
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    depends_on:
+      - mongodb
+      - redis
   mongodb:
     image: mongo:6.0
     container_name: task-manager-mongo
