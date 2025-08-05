@@ -1,18 +1,6 @@
 version: '3.8'
 
 services:
-  task_manager_app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: task-manager-app
-    ports:
-      - "3000:3000"
-    env_file:
-      - .env
-    depends_on:
-      - mongodb
-      - redis
   mongodb:
     image: mongo:6.0
     container_name: task-manager-mongo
@@ -33,6 +21,31 @@ services:
     container_name: redis
     ports:
       - "6379:6379"
+  task-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: node dist/scripts/generate-tasks.js
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/taskdb
+    depends_on:
+      - mongodb
+      - redis
+  task_manager_app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: task-manager-app
+    ports:
+      - "3000:3000"
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/taskdb
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - mongodb
+      - redis
+      - task-runner
 
 volumes:
   mongo-data:

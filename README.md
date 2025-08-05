@@ -11,4 +11,4 @@ ESLint + Prettier
 
 
 A script to generate mock tasks for testing purposes is listed in scripts folder.
-npm run generate-tasks
+npm run generate-tasks. In the docker compose, service task-runner handles it. 

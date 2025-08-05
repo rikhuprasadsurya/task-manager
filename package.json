@@ -4,6 +4,7 @@
   "description": "A Node.js application in the backend that provides API for managing tasks. The Tech-stack used is as below:",
   "main": "index.js",
   "scripts": {
+    "build": "tsc",
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "test": "jest --detectOpenHandles --forceExit",
     "generate-tasks": "ts-node scripts/generate-tasks.ts"
