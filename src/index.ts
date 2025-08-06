@@ -4,11 +4,11 @@ import {connectDB} from "./utils/db";
 
 if (process.env.NODE_ENV !== 'production') {
     require('dotenv').config();
+}else {
+    connectDB().catch((err) => {
+        console.error('Failed to start DB:', err);
+    });
 }
-
-connectDB().catch((err) => {
-    console.error('Failed to start DB:', err);
-});
 
 const app = express();
 app.use(express.json());
