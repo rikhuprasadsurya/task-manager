@@ -4,12 +4,12 @@ import {
     CreateTaskInput,
     getTasks,
     getTaskById,
-    updateTask
+    updateTask, getTasksByFilter
 } from '../../src/services/task.service';
 import { Task } from '../../src/models/task.model';
 import redis from '../../src/utils/redis';
 import mongoose from "mongoose";
-import {BadRequestError, NotFoundError} from "../../src/utils/errors";
+import {NotFoundError} from "../../src/utils/errors";
 
 jest.mock('../../src/models/task.model');
 jest.mock('ioredis', () => {
@@ -56,6 +56,41 @@ describe('Task Service', () => {
             expect(Task.find).toHaveBeenCalled();
             expect(redis.set).toHaveBeenCalledWith('tasks:all', JSON.stringify(dbTasks));
             expect(tasks).toEqual(dbTasks);
+        });
+    });
+
+    describe('Pagination & Filter GET /api/tasks', () => {
+        const allTasks = [
+            { title: 'Task 1', status: 'pending' },
+            { title: 'Task 2', status: 'completed' },
+            { title: 'Task 3', status: 'done' },
+            { title: 'Task 4', status: 'pending' },
+            { title: 'Task 5', status: 'pending' },
+            { title: 'Task 6', status: 'pending' },
+        ];
+
+        it('should fetch tasks with pagination', async () => {
+            const pageNumber = 2;
+            const pageSize = 3;
+            const skip = (pageNumber - 1) * pageSize;
+            const paginatedTaskList = allTasks.slice(skip, skip + pageSize);
+
+            const mockLimit = jest.fn().mockResolvedValue(paginatedTaskList);
+            const mockSkip = jest.fn().mockReturnValue({limit: mockLimit});
+            (Task.find as jest.Mock).mockReturnValue({skip: mockSkip});
+            (Task.countDocuments as jest.Mock).mockReturnValue(allTasks.length);
+
+            const tasksInfo = await getTasksByFilter(pageNumber, pageSize);
+
+            expect(Task.find).toHaveBeenCalled();
+            expect(mockSkip).toHaveBeenCalledWith(skip);
+            expect(mockLimit).toHaveBeenCalledWith(pageSize);
+
+            expect(tasksInfo.pageNumber).toEqual(pageNumber);
+            expect(tasksInfo.pageSize).toEqual(pageSize);
+            expect(tasksInfo.tasks).toHaveLength(pageSize);
+            expect(tasksInfo.total).toEqual(allTasks.length);
+            expect(tasksInfo.tasks[0].title).toEqual(paginatedTaskList[0].title);
         });
     });
 

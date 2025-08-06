@@ -2,6 +2,7 @@ import redis from '../utils/redis';
 import {ITask, Task} from '../models/task.model';
 import mongoose from "mongoose";
 import {BadRequestError, NotFoundError} from "../utils/errors";
+import {PaginationResult} from "../models/paginationResult.model";
 
 export type CreateTaskInput = Pick<ITask, 'title' | 'description' | 'status'>;
 export const TASKS_CACHE_KEY = 'tasks:all';
@@ -23,6 +24,22 @@ export async function getTasks() {
     await redis.set(TASKS_CACHE_KEY, JSON.stringify(tasks));
 
     return tasks;
+}
+
+export async function getTasksByFilter(pageNumber: number, pageSize: number): Promise<PaginationResult> {
+    const skip = (pageNumber-1) * pageSize;
+
+    const tasks = await Task.find()
+        .skip(skip)
+        .limit(pageSize);
+    const total = await Task.countDocuments();
+
+    return {
+        pageNumber: pageNumber,
+        pageSize: pageSize,
+        tasks: tasks,
+        total: total
+    };
 }
 
 export async function getTaskById(id: string) {
